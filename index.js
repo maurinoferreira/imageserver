@@ -9,6 +9,11 @@ const sharp = require("sharp");
 const path = require("path");
 const crypto = require("crypto");
 
+var serviceAccount = require("./valeojobs-firebas.json");
+
+const vision = require('@google-cloud/vision');
+const client = new vision.ImageAnnotatorClient({credentials: serviceAccount });
+
 const port = process.env.PORT || 8000;
 
 app.set("view engine", "ejs");
@@ -46,14 +51,28 @@ app.post("/uploadImage", async (req, res)=>{
             res.json({message: "Invalid format, select png, jpg files"})
         else
         {
-            await sharp(buffer, { failOnError: false })
-            .resize({ width: 400, height: 300, fit: 'fill'})
-            .jpeg({mozjpeg: true, quality: 30, progressive: true})
-            .toFile(`./photos/${ref}`)
-    
-            const link = `${process.env.SERVER_HOST}:${port}/images/${ref}`;
-    
-             res.json({ link });
+
+            const [result] = await client.safeSearchDetection(buffer);
+            const detections = result.safeSearchAnnotation;
+
+            if(detections.adult === "VERY_LIKELY" || detections.adult === "LIKELY" || detections.adult === "POSSIBLE" ||
+               detections.medical === "LIKELY" || detections.violence === "VERY_LIKELY" || detections.violence === "POSSIBLE")
+               {
+                res.json({message: "image does not follow policies"})
+               }
+              else  
+              {
+                await sharp(buffer, { failOnError: false })
+                .resize({ width: 400, height: 300, fit: 'fill'})
+                .jpeg({mozjpeg: true, quality: 30, progressive: true})
+                .toFile(`./photos/${ref}`)
+        
+                const link = `${process.env.SERVER_HOST}:${port}/images/${ref}`;
+        
+                res.json({ link });
+              }
+               
+          
         }
 
     })
