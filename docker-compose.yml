@@ -1,0 +1,38 @@
+version: "3"
+
+networks:
+  local_network:
+    driver: bridge
+
+volumes:
+  photos:
+  postgres_data:
+
+services:
+  node:
+    build: .
+    command: "npm run start"
+    working_dir: /app
+    restart: always
+    expose:
+     - "8000"
+    ports:
+     - "8000:8000"
+    volumes:
+     - photos:/app/photos
+    networks:
+     - local_network
+
+  postgres:
+    image: postgres:latest
+    restart: always
+    networks:
+     - local_network
+    ports:
+     - "5432:5432"
+    enviroment:
+     POSTGRES_PASSWORD: "${DB_PASSWORD}"
+     POSTGRES_USER: "${DB_USERNAME}"
+     POSTGRES_DB: "${DB_NAME}"
+    volumes:
+     - postgres_data:/var/lib/postgresql/data

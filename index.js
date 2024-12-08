@@ -63,13 +63,13 @@ app.post("/uploadImage", async (req, res)=>{
               else  
               {
                 await sharp(buffer, { failOnError: false })
-                .resize({ width: 400, height: 300, fit: 'fill'})
-                .jpeg({mozjpeg: true, quality: 30, progressive: true})
+                .resize({ width: 400, fit: 'contain'})
+                .jpeg({mozjpeg: true, progressive: true, chromaSubsampling: '4:4:4'})
                 .toFile(`./photos/${ref}`)
-        
+
                 const link = `${process.env.SERVER_HOST}:${port}/images/${ref}`;
         
-                res.json({ link });
+                res.json({link});
               }
                
           

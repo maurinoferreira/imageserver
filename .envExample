@@ -1,2 +1,9 @@
 PORT=8000
 SERVER_HOST=http://localhost
+
+# DB credentials
+DB_USERNAME=
+DB_PASSWORD=
+DB_NAME=
+DB_HOST=
+DB_PORT=
